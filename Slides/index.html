@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<!--
+  Google HTML5 slide template
+
+  Authors: Luke Mahé (code)
+           Marcin Wichary (code and design)
+           
+           Dominic Mazzoni (browser compatibility)
+           Charles Chen (ChromeVox support)
+
+  URL: http://code.google.com/p/html5slides/
+
+  Modified by: Travis Xiao (redesigned)
+-->
+
+<html>
+  <head>
+    <title>Presentation</title>
+
+    <meta charset='utf-8'>
+    <script
+      src='./js/slides.js'></script>
+  </head>
+  
+  <style>
+    /* Your individual styles here, or just use inline styles if that’s
+       what you want. */
+
+    
+  </style>
+
+  <body style='display: none'>
+
+    <section class='slides layout-regular template-default nobackground'>
+      
+      <!-- Your slides (<article class="nobackground">s) go here. Delete or comment out the
+           slides below. -->
+        
+        
+      
+      <!-- <article class='biglogo'>
+      </article> -->
+
+      <article class="nobackground">
+        <h1>
+          <p>Demos of Lua and C++</p>
+          <p>Calling each other</p>
+        </h1>
+        <p>
+          Travis Xiao
+          <br>
+          June 17, 2015
+        </p>
+      </article>
+      
+      <article class="nobackground">
+        <h3>
+          Contents
+        </h3>
+        <ul>
+          <li>
+            Calling C++ from Lua
+          </li>
+          <li>
+            Calling Lua from C++
+          </li>
+        </ul>
+      </article>
+
+      <article class="nobackground">
+        <h3>
+          Calling C++ from Lua (Demo 1)
+        </h3>
+        <p>
+          <b>Step 1</b><br>Install g++, liblua5.1-0, liblua5.1-0-dev, lua5.1<br>
+          <section>
+            <pre>$ sudo apt-get install liblua5.1-0, liblua5.1-0-dev, lua5.1</pre>
+          </section>
+        </p>
+      </article>
+
+      <article class='nobackground'>
+        <h3>
+          Calling C++ from Lua (Demo 1)
+        </h3>
+        <p>
+          <b>Step 2</b><br>Create file <code>avg.lua</code>
+        </p>
+        <section>
+          <pre>-- call a C++ function
+-- Function average is declared and implemented in C++ file
+avg, sum = average(10, 20, 30, 40, 50)
+
+print("The average is ", avg)
+print("The sum is ", sum)</pre>
+        </section>
+        <p>
+          The syntax is similar to Python to some extend.
+        </p>
+      </article>
+
+      <article class="nobackground">
+        <h3>
+          Calling C++ from Lua (Demo 1)
+        </h3>
+        <p>
+          <b>Step 3.1</b><br>Implement function averge in C++
+        </p>
+        <section>
+          <pre>
+lua_State* L;
+
+static int average(lua_State *L)
+{
+  /* get number of arguments */
+  int n = lua_gettop(L);
+  double sum = 0;
+  int i;
+
+  /* loop through each argument */
+  for (i = 1; i &lt;= n; i++)
+  {
+    /* total the arguments */
+    sum += lua_tonumber(L, i);
+  }
+         </pre>
+        </section>
+      </article>
+
+      <article class="nobackground">
+        <h3>
+          Calling C++ from Lua (Demo 1)
+        </h3>
+        <p>
+          <b>Step 3.2</b><br>Implement function <code>averge</code> in C++ (luaavg.cpp)
+        </p>
+        <section class="smaller">
+          <pre>
+  /* push the average */
+  lua_pushnumber(L, sum / n);
+
+  /* push the sum */
+  lua_pushnumber(L, sum);
+
+  /* return the number of results */
+  return 2;
+}
+          </pre>
+        </section>
+      </article>
+
+      <article class="nobackground">
+        <h3>
+          Calling C++ from Lua (Demo 1)
+        </h3>
+        <p>
+          <b>Step 4</b><br>Implement <code>Main</code> function in C++ (luaavg.cpp)
+        </p>
+        <section>
+          <pre>
+/* initialize Lua */
+  L = lua_open();
+
+  /* load Lua base libraries */
+  luaL_openlibs(L);
+
+  /* register our function */
+  lua_register(L, "average", average);
+
+  /* run the script */
+  luaL_dofile(L, "avg.lua");
+
+  /* cleanup Lua */
+  lua_close(L);
+          </pre>
+        </section>
+      </article>    
+
+      <article class="nobackground">
+        <h3>
+          Calling C++ from Lua (Demo 1)
+        </h3>
+        <p>
+          <b>Step 5</b><br>Compile &amp; Run
+        </p>
+        <ul>
+          <li>
+            Compile with g++ directly
+            <section>
+              <pre>$ g++ luaavg.cpp -I /usr/include/lua5.1 -llua5.1 -o luaavg
+$ ./luaavg</pre>
+            </section>
+          </li>
+          <li>
+            Or Write makefile
+          </li>
+        </ul>
+        <p>
+          Results
+        </p>
+        <p>
+          <section class="smaller">
+            <pre>
+travis@ubuntu:~/Codes/Lua/luaavg$ ./luaavg 
+The average is  32
+The sum is  160
+Press enter to exit...
+            </pre>
+          </section>
+        </p>
+        <!-- <p>
+          The versions of lua header file and library file should be the same.
+        </p> -->
+      </article>
+
+      <article class="nobackground">
+        <h3>
+          Calling Lua from C++ (Demo 2)
+        </h3>
+        <p>
+          <b>Step 1</b><br>Create file luaadd.lua
+        </p>
+        <section>
+          <pre>-- add two numbers
+
+function add ( x, y )
+
+  return x + y + 2
+
+end</pre>
+        </section>
+      </article>
+
+      <article class="smaller nobackground">
+        <h3>
+          Calling Lua from C++ (Demo 2)
+        </h3>
+        <p>
+          <b>Step 2</b><br>Implement C++ function <code>luaadd</code> that calls corresponding Lua function.
+        </p>
+        <section>
+          <pre>lua_State* L;  
+int luaadd ( int x, int y )  
+{  
+    int sum;  
+    /* the function name */  
+    lua_getglobal(L, "add");
+    /* the first argument */  
+    lua_pushnumber(L, x);
+    /* the second argument */  
+    lua_pushnumber(L, y);
+    /* call the function with 2 arguments, return 1 result */  
+    lua_call(L, 2, 1);
+    /* get the result */
+    sum = (int)lua_tonumber(L, -1);
+    lua_pop(L, 1);
+    return sum;
+}</pre>
+        </section>
+      </article>
+
+      <article class="nobackground">
+        <h3>
+          Calling Lua from C++ (Demo 2)
+        </h3>
+        <p>
+          <b>Step 3</b><br>Implement C++ function <code>main</code> that calls <code>luaadd</code>.
+        </p>
+        <section>
+          <pre>
+    int sum;  
+    /* initialize Lua */  
+    L = lua_open();  
+    /* load Lua base libraries */  
+    //lua_baselibopen(L);  
+    /* load the script */  
+    luaL_dofile(L, "luaadd.lua");
+    /* call the add function */  
+    sum = luaadd( 10, 15 );  
+    /* print the result */  
+    printf( "The sum is %d", sum );  
+    /* cleanup Lua */  
+    lua_close(L);</pre>
+        </section>
+      </article>
+
+      <article class="nobackground">
+        <h3>
+          Calling Lua from C++ (Demo 2)
+        </h3>
+        <p>
+          <b>Step 3</b><br>Compile &amp; Run
+        </p>
+        Follow instructions of Demo 1
+        <section>
+          <pre>travis@ubuntu:~/Codes/Lua/luaadd$ make
+g++ luaadd.cpp -I /usr/include/lua5.1 -llua5.1 -o luaadd
+travis@ubuntu:~/Codes/Lua/luaadd$ ./luaadd 
+The sum is 27</pre>
+        </section>
+      </article>
+
+      <article class="nobackground">
+        <h2>
+          Q &amp; A
+        </h2>
+      </article>      
+
+    </section>
+
+  </body>
+</html>
